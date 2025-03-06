@@ -24,6 +24,11 @@ CORS(app, resources={
 current_dir = os.path.dirname(os.path.abspath(__file__))
 data_file_path = os.path.join(current_dir, 'data', 'diseases.csv')
 
+# Global variables to store model and data
+model = None
+feature_columns = None
+le = None
+
 # Load and prepare the data
 try:
     print(f"Attempting to load data from: {data_file_path}")
@@ -31,19 +36,25 @@ try:
     print("Data loaded successfully")
     print("Columns in dataset:", df.columns.tolist())
     
-    # Prepare features and target
-    if 'disease' not in df.columns:
-        raise ValueError(f"'disease' column not found. Available columns: {df.columns.tolist()}")
+    # Process symptoms from the dataset
+    symptoms_list = []
+    for symptoms in df['symptoms'].str.split(','):
+        symptoms_list.extend([s.strip().lower() for s in symptoms])
+    unique_symptoms = sorted(list(set(symptoms_list)))
+    print(f"Number of unique symptoms found: {len(unique_symptoms)}")
+    print("Sample symptoms:", unique_symptoms[:10])
     
-    # Extract symptoms from the 'symptoms' column and create feature columns
-    symptoms_df = df['symptoms'].str.get_dummies(sep=',')
+    # Create feature matrix
+    X = pd.DataFrame(0, index=range(len(df)), columns=unique_symptoms)
+    for idx, symptoms in enumerate(df['symptoms'].str.split(',')):
+        for symptom in symptoms:
+            symptom = symptom.strip().lower()
+            if symptom in unique_symptoms:
+                X.loc[idx, symptom] = 1
     
-    # Prepare features and target
-    X = symptoms_df
+    # Prepare target variable
     y = df['disease']
-    
-    print("Features shape:", X.shape)
-    print("Number of unique diseases:", len(y.unique()))
+    print(f"Number of diseases: {len(y.unique())}")
     
     # Encode the target variable
     le = LabelEncoder()
@@ -55,8 +66,8 @@ try:
     print("Model trained successfully")
     
     # Store the feature columns for prediction
-    feature_columns = X.columns.tolist()
-    print(f"Number of symptoms (features): {len(feature_columns)}")
+    feature_columns = unique_symptoms
+    print(f"Model ready with {len(feature_columns)} symptoms as features")
     
 except Exception as e:
     print(f"Error during initialization: {str(e)}")
@@ -64,22 +75,49 @@ except Exception as e:
 
 @app.route('/health', methods=['GET'])
 def health_check():
+    if model is None or feature_columns is None or le is None:
+        return jsonify({
+            "status": "unhealthy",
+            "error": "Model not initialized"
+        }), 500
     return jsonify({"status": "healthy"}), 200
 
 @app.route('/predict', methods=['POST'])
 def predict():
     try:
+        if model is None or feature_columns is None or le is None:
+            raise ValueError("Model not initialized")
+        
         # Get symptoms from request
         data = request.get_json()
-        symptoms = data.get('symptoms', [])
+        if not data or 'symptoms' not in data:
+            raise ValueError("No symptoms provided")
         
-        # Create a DataFrame with all possible symptoms set to 0
+        symptoms = [s.strip().lower() for s in data['symptoms']]
+        print(f"Received symptoms: {symptoms}")
+        
+        # Validate symptoms
+        if not symptoms:
+            raise ValueError("Empty symptoms list")
+        
+        # Create input data
         input_data = pd.DataFrame(0, index=[0], columns=feature_columns)
+        valid_symptoms = []
+        invalid_symptoms = []
         
-        # Set 1 for symptoms that are present
         for symptom in symptoms:
-            if symptom in input_data.columns:
+            if symptom in feature_columns:
                 input_data[symptom] = 1
+                valid_symptoms.append(symptom)
+            else:
+                invalid_symptoms.append(symptom)
+        
+        if not valid_symptoms:
+            raise ValueError(f"No valid symptoms found. Invalid symptoms: {invalid_symptoms}")
+        
+        print(f"Valid symptoms: {valid_symptoms}")
+        if invalid_symptoms:
+            print(f"Invalid symptoms: {invalid_symptoms}")
         
         # Make prediction
         prediction = model.predict(input_data)
@@ -97,13 +135,18 @@ def predict():
             "top_3_predictions": [
                 {"disease": disease, "probability": float(prob)}
                 for disease, prob in zip(top_3_diseases, top_3_probabilities)
-            ]
+            ],
+            "valid_symptoms": valid_symptoms,
+            "invalid_symptoms": invalid_symptoms
         }
         
+        print(f"Prediction result: {result}")
         return jsonify(result), 200
     
     except Exception as e:
-        return jsonify({"error": str(e)}), 400
+        error_message = str(e)
+        print(f"Error during prediction: {error_message}")
+        return jsonify({"error": error_message}), 400
 
 if __name__ == '__main__':
     app.run(debug=True) 
