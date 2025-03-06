@@ -22,11 +22,18 @@ try:
     print("Columns in dataset:", df.columns.tolist())
     
     # Prepare features and target
-    if 'Disease' not in df.columns:
-        raise ValueError(f"'Disease' column not found. Available columns: {df.columns.tolist()}")
+    if 'disease' not in df.columns:
+        raise ValueError(f"'disease' column not found. Available columns: {df.columns.tolist()}")
     
-    X = df.drop('Disease', axis=1)
-    y = df['Disease']
+    # Extract symptoms from the 'symptoms' column and create feature columns
+    symptoms_df = df['symptoms'].str.get_dummies(sep=',')
+    
+    # Prepare features and target
+    X = symptoms_df
+    y = df['disease']
+    
+    print("Features shape:", X.shape)
+    print("Number of unique diseases:", len(y.unique()))
     
     # Encode the target variable
     le = LabelEncoder()
@@ -36,6 +43,11 @@ try:
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X, y_encoded)
     print("Model trained successfully")
+    
+    # Store the feature columns for prediction
+    feature_columns = X.columns.tolist()
+    print(f"Number of symptoms (features): {len(feature_columns)}")
+    
 except Exception as e:
     print(f"Error during initialization: {str(e)}")
     print(f"Current working directory: {os.getcwd()}")
@@ -49,10 +61,10 @@ def predict():
     try:
         # Get symptoms from request
         data = request.get_json()
-        symptoms = data.get('symptoms', {})
+        symptoms = data.get('symptoms', [])
         
         # Create a DataFrame with all possible symptoms set to 0
-        input_data = pd.DataFrame(0, index=[0], columns=X.columns)
+        input_data = pd.DataFrame(0, index=[0], columns=feature_columns)
         
         # Set 1 for symptoms that are present
         for symptom in symptoms:
