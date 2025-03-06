@@ -1,0 +1,10 @@
+disease,symptoms,severity,treatment,medications,precautions
+Common Cold,"fever, runny nose, sore throat, cough, fatigue",Low,"Rest and stay hydrated. Use over-the-counter medications for symptom relief.","Acetaminophen, Decongestants, Cough suppressants","Avoid cold exposure, Get adequate rest, Stay hydrated"
+Flu,"high fever, body aches, chills, fatigue, cough, headache",Medium,"Rest, hydration, and antiviral medications if prescribed.","Oseltamivir, Acetaminophen, Ibuprofen","Rest at home, Avoid contact with others, Stay hydrated"
+Allergies,"sneezing, itchy eyes, runny nose, congestion",Low,"Avoid allergens and take antihistamines.","Antihistamines, Nasal sprays, Eye drops","Avoid allergens, Keep windows closed, Use air purifiers"
+Migraine,"severe headache, nausea, light sensitivity, sound sensitivity",Medium,"Rest in a dark quiet room. Take prescribed medications.","Sumatriptan, Ibuprofen, Anti-nausea medication","Avoid triggers, Rest in dark room, Stay hydrated"
+Bronchitis,"persistent cough, chest congestion, fatigue, mild fever",Medium,"Rest, increased fluid intake, and medication for symptoms.","Bronchodilators, Cough suppressants, Mucolytics","Stop smoking, Use humidifier, Get plenty of rest"
+Gastroenteritis,"nausea, vomiting, diarrhea, stomach cramps, fever",Medium,"Stay hydrated and rest. Follow the BRAT diet.","Oral rehydration solutions, Anti-diarrheal medication","Stay hydrated, Avoid solid foods initially, Practice good hygiene"
+Hypertension,"headache, shortness of breath, dizziness",High,"Regular blood pressure monitoring and medication.","ACE inhibitors, Beta blockers, Diuretics","Reduce salt intake, Regular exercise, Stress management"
+Asthma,"wheezing, shortness of breath, chest tightness, cough",High,"Use prescribed inhalers and avoid triggers.","Bronchodilators, Inhaled corticosteroids","Avoid triggers, Keep rescue inhaler nearby, Monitor symptoms"
+Diabetes,"excessive thirst, frequent urination, fatigue, blurred vision",High,"Monitor blood sugar, take prescribed medications, follow diet.","Insulin, Metformin, Blood sugar testing supplies","Regular blood sugar testing, Proper diet, Regular exercise" 
