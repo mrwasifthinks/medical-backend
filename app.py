@@ -5,14 +5,26 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
+import os
 
 app = Flask(__name__)
 CORS(app)
 
+# Get the absolute path to the data directory
+current_dir = os.path.dirname(os.path.abspath(__file__))
+data_file_path = os.path.join(current_dir, 'data', 'diseases.csv')
+
 # Load and prepare the data
 try:
-    df = pd.read_csv('data/diseases.csv')
+    print(f"Attempting to load data from: {data_file_path}")
+    df = pd.read_csv(data_file_path)
+    print("Data loaded successfully")
+    print("Columns in dataset:", df.columns.tolist())
+    
     # Prepare features and target
+    if 'Disease' not in df.columns:
+        raise ValueError(f"'Disease' column not found. Available columns: {df.columns.tolist()}")
+    
     X = df.drop('Disease', axis=1)
     y = df['Disease']
     
@@ -23,8 +35,10 @@ try:
     # Train the model
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X, y_encoded)
+    print("Model trained successfully")
 except Exception as e:
-    print(f"Error during initialization: {e}")
+    print(f"Error during initialization: {str(e)}")
+    print(f"Current working directory: {os.getcwd()}")
 
 @app.route('/health', methods=['GET'])
 def health_check():
