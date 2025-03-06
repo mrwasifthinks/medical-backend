@@ -8,7 +8,17 @@ from sklearn.ensemble import RandomForestClassifier
 import os
 
 app = Flask(__name__)
-CORS(app)
+# Update CORS to allow requests from your Netlify domain
+CORS(app, resources={
+    r"/*": {
+        "origins": [
+            "http://localhost:5173",  # Local development
+            "https://ai-medical-diagnosis.netlify.app",  # Production Netlify URL
+        ],
+        "methods": ["GET", "POST", "OPTIONS"],
+        "allow_headers": ["Content-Type"]
+    }
+})
 
 # Get the absolute path to the data directory
 current_dir = os.path.dirname(os.path.abspath(__file__))
